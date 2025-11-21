@@ -1,0 +1,18 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+  <div class="module">
+    <h1>{{ message|default:_("Hello!") }}</h1>
+    {% if object %}
+      <p><strong>{% trans "Current object" %}:</strong> {{ object }}</p>
+    {% endif %}
+    <p>
+      <a class="button" href="{{ original_url|default:'#' }}">
+        {% trans "Back to change form" %}
+      </a>
+    </p>
+  </div>
+{% endblock %}
+
+

@@ -1,0 +1,34 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+  <div class="module">
+    <h1>{{ title|default:_("Form View") }}</h1>
+    {% if object %}
+      <p><strong>{% trans "Current object" %}:</strong> {{ object }}</p>
+    {% endif %}
+    
+    {% if form %}
+      <form method="post">
+        {% csrf_token %}
+        <fieldset class="module aligned">
+          {{ form.as_p }}
+        </fieldset>
+        <div class="submit-row">
+          <input type="submit" value="{% trans 'Submit' %}" class="default">
+        </div>
+      </form>
+    {% endif %}
+    
+    {% if message %}
+      <p><strong>{{ message }}</strong></p>
+    {% endif %}
+    
+    <p>
+      <a class="button" href="{{ original_url|default:'#' }}">
+        {% trans "Back to change form" %}
+      </a>
+    </p>
+  </div>
+{% endblock %}
+
