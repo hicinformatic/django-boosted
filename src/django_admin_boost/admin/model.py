@@ -8,7 +8,8 @@ from typing import Iterable, List
 from django.contrib.admin import ModelAdmin
 from django.urls import path, reverse
 
-from .format import format_label, format_status
+from .format import format_label, format_status, format_with_help_text
+from .fieldsets import add_to_fieldset, remove_from_fieldset
 from .views import ViewGenerator
 
 
@@ -24,6 +25,15 @@ class AdminBoostModel(ModelAdmin):
 
     format_label = staticmethod(format_label)
     format_status = staticmethod(format_status)
+    format_with_help_text = staticmethod(format_with_help_text)
+    add_to_fieldset = staticmethod(add_to_fieldset)
+    remove_from_fieldset = staticmethod(remove_from_fieldset)
+
+    def __init__(self, *args, **kwargs):
+        if hasattr(self, "change_fieldsets"):
+            self.change_fieldsets()
+        super().__init__(*args, **kwargs)
+
 
     def get_boost_view_names(self) -> List[str]:
         return list(self.boost_views or [])
