@@ -1,40 +1,42 @@
 ## Project Purpose
 
-**ProviderKit** is a generic provider management library for Python. It provides a standardized way to manage, discover, and interact with multiple service providers in a unified manner.
+**django-admin-boost** is a lightweight Django library that provides helpers to extend Django's admin interface with extra views, custom forms, and matching UI affordances (object tools, permissions, standard responses).
 
 ### Core Functionality
 
 The library enables you to:
 
-1. **Discover and enumerate providers** with essential metadata:
-   - Provider name (human-readable)
-   - Unique identifier (for programmatic access)
-   - Dependency package availability (check if required packages are installed)
-   - Configuration readiness (verify if provider is properly configured)
-   - Documentation access (links to provider documentation)
-   - Status information (provider availability, health, etc.)
-   - Website URL (provider's official site)
+1. **Extend Django admin with custom views**:
+   - Use the `@admin_boost_object_view` decorator to create custom admin views
+   - Automatically fetch target objects and check permissions
+   - Build default context before rendering templates
+   - Register custom URLs with proper admin protection
 
-2. **Implement business logic** through a modular mixin-based architecture:
-   - **`base.py`**: Core provider base classes and registration mechanisms
-   - **`package.py`**: Package dependency management and validation
-   - **`service.py`**: Business logic implementation and service methods
-   - **`urls.py`**: URL routing and endpoint management (if applicable)
-   - **`config.py`**: Configuration management and validation
+2. **Add custom forms to admin views**:
+   - Automatically apply admin widgets (`ForeignKeyRawIdWidget` or `AutocompleteSelect`)
+   - Respect `raw_id_fields` and `autocomplete_fields` settings
+   - Handle form validation on POST requests
+   - Add forms to template context automatically
+
+3. **Enhance admin UI with object tools**:
+   - Inject extra object-tool buttons into change forms
+   - Use `AdminBoostMixin` to register custom URLs
+   - Protect views with `admin_site.admin_view`
+   - Provide additional templates for change forms and list views
 
 ### Architecture
 
-The library uses a mixin pattern to separate concerns:
+The library uses a mixin-based approach:
 
-- Each provider can implement one or more mixins depending on its needs
-- Mixins are organized in dedicated files for clear separation of concerns
-- Providers can be discovered, queried, and used programmatically
-- The system validates dependencies and configuration before allowing provider usage
+- `AdminBoostModel` (or `AdminBoostMixin`) extends Django's `ModelAdmin`
+- Decorators mark methods as admin views with configuration
+- View generator creates proper admin views with permissions and context
+- Templates provide UI components for object tools and custom views
 
 ### Use Cases
 
-- Multi-provider integrations (email, SMS, payment, etc.)
-- Provider fallback mechanisms
-- Provider discovery and selection
-- Configuration validation across multiple providers
-- Unified interface for heterogeneous services
+- Adding custom actions to Django admin change forms
+- Creating custom views for specific admin operations
+- Extending admin with additional functionality beyond standard CRUD
+- Building admin interfaces with custom workflows
+- Adding object-specific tools and buttons to admin pages

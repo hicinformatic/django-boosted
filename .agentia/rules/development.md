@@ -2,7 +2,7 @@
 
 ### General Rules
 
-- Always execute project tooling through `python dev.py <command>`.
+- Always execute project tooling through `./service.py dev <command>` or `python dev.py <command>`.
 - Default to English for all code artifacts (comments, docstrings, logging, error strings, documentation snippets, etc.) regardless of the language used in discussions.
 - Keep comments minimal and only when they clarify non-obvious logic.
 - Avoid reiterating what the code already states clearly.
@@ -21,7 +21,7 @@
 - **Type Hints**: All public functions and methods must have complete type hints.
 - **Docstrings**: Use Google-style docstrings for all public classes, methods, and functions.
 - **Linting**: Follow PEP 8 and use the configured linters (ruff, mypy, etc.).
-- **Formatting**: Use the configured formatter (black, ruff format, etc.).
+- **Formatting**: Use the configured formatters (`black` and `ruff format`).
 
 ### Module Organization
 

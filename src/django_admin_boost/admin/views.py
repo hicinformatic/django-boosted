@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from typing import Callable
 
 from django.contrib.admin.utils import unquote
@@ -267,7 +266,7 @@ class ViewGenerator:
         permission: str = "view",
     ) -> Callable:
         import inspect
-        
+
         def wrapper(request, object_id=None, *args, **kwargs):
             obj, redirect = self._check_permissions(
                 request, object_id if requires_object else None

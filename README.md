@@ -87,17 +87,17 @@ The decorator handles:
 
 ## Development commands
 
-Run everything via `python dev.py <command>`:
+Run everything via `./service.py dev <command>` or `python dev.py <command>`:
 
 | Command | Description |
 | --- | --- |
-| `python dev.py install-dev` | create the venv and install the package editable with `dev` extras. |
-| `python dev.py lint` | run Ruff + Black in check mode. |
-| `python dev.py format` | apply Ruff --fix then Black. |
-| `python dev.py test` | run `pytest` (with `pytest-django`). |
-| `python dev.py build` | clean then build wheel + sdist. |
-| `python dev.py security` | Bandit + Safety + pip-audit. |
-| `python dev.py help` | list all commands. |
+| `./service.py dev install-dev` or `python dev.py install-dev` | create the venv and install the package editable with `dev` extras. |
+| `./service.py dev lint` or `python dev.py lint` | run Ruff + Black in check mode. |
+| `./service.py dev format` or `python dev.py format` | apply Ruff --fix then Black. |
+| `./service.py dev test` or `python dev.py test` | run `pytest` (with `pytest-django`). |
+| `./service.py dev build` or `python dev.py build` | clean then build wheel + sdist. |
+| `./service.py quality security` or `python dev.py security` | Bandit + Safety + pip-audit. |
+| `./service.py dev help` or `python dev.py help` | list all commands. |
 
 ## License
 
