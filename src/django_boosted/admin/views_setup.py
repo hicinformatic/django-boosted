@@ -19,7 +19,7 @@ def setup_boost_views(self, view_generator: ViewGenerator):
 
         view_type = config["view_type"]
         label = config["label"]
-        template_name = config.get("template_name") or "admin_boost/message.html"
+        template_name = config.get("template_name")  # None si non spécifié, laisse chaque méthode utiliser son défaut
         path_fragment = config.get("path_fragment")
         requires_object = config.get("requires_object")
         permission = config.get("permission", "view")
@@ -54,12 +54,13 @@ def setup_boost_views(self, view_generator: ViewGenerator):
             )
             view._admin_boost_config["show_in_object_tools"] = True  # type: ignore[attr-defined]
         elif view_type == "form":
+            kwargs = {"path_fragment": path_fragment, "permission": permission}
+            if template_name is not None:
+                kwargs["template_name"] = template_name
             view = view_generator.generate_admin_custom_form_view(
                 original_method,
                 label,
-                template_name=template_name,
-                path_fragment=path_fragment,
-                permission=permission,
+                **kwargs
             )
             view._admin_boost_config["requires_object"] = (  # type: ignore[attr-defined]
                 requires_object
@@ -87,6 +88,19 @@ def setup_boost_views(self, view_generator: ViewGenerator):
                 requires_object
             )
             view._admin_boost_config["show_in_object_tools"] = True  # type: ignore[attr-defined]
+        elif view_type == "adminform":
+            kwargs = {"path_fragment": path_fragment, "permission": permission}
+            if template_name is not None:
+                kwargs["template_name"] = template_name
+            view = view_generator.generate_admin_custom_adminform_view(
+                original_method,
+                label,
+                **kwargs
+            )
+            view._admin_boost_config["requires_object"] = (  # type: ignore[attr-defined]
+                requires_object
+            )
+            view._admin_boost_config["show_in_object_tools"] = True  #
         else:
             continue
 

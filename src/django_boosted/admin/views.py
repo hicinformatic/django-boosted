@@ -134,52 +134,7 @@ class ViewGenerator:
         label: str,
         config: ViewConfig,
     ) -> Callable:
-        wrapper = self._create_view(view_func, label, config)
-        path_fragment = config.path_fragment or view_func.__name__.replace("_", "-")
-        wrapper._admin_boost_config = {  # type: ignore[attr-defined]
-            "label": label,
-            "path_fragment": path_fragment,
-            "permission": config.permission,
-        }
-        return wrapper
-
-    def _generate_admin_custom_list_view(
-        self,
-        view_func: Callable,
-        label: str,
-        config: ViewConfig,
-    ) -> Callable:
-        wrapper = self._create_view(view_func, label, config)
-        path_fragment = config.path_fragment or view_func.__name__.replace("_", "-")
-        wrapper._admin_boost_config = {  # type: ignore[attr-defined]
-            "label": label,
-            "path_fragment": path_fragment,
-            "permission": config.permission,
-        }
-        return wrapper
-
-    def _generate_admin_custom_form_view(
-        self,
-        view_func: Callable,
-        label: str,
-        config: ViewConfig,
-    ) -> Callable:
-        config.requires_object = True
-        wrapper = self._create_view(view_func, label, config)
-        path_fragment = config.path_fragment or view_func.__name__.replace("_", "-")
-        wrapper._admin_boost_config = {  # type: ignore[attr-defined]
-            "label": label,
-            "path_fragment": path_fragment,
-            "permission": config.permission,
-        }
-        return wrapper
-
-    def _generate_admin_custom_message_view(
-        self,
-        view_func: Callable,
-        label: str,
-        config: ViewConfig,
-    ) -> Callable:
+        """Generate a custom admin view with common configuration."""
         wrapper = self._create_view(view_func, label, config)
         path_fragment = config.path_fragment or view_func.__name__.replace("_", "-")
         wrapper._admin_boost_config = {  # type: ignore[attr-defined]
@@ -204,7 +159,7 @@ class ViewGenerator:
             permission=permission,
             requires_object=False,
         )
-        wrapper = self._generate_admin_custom_list_view(view_func, label, config)
+        wrapper = self._generate_admin_custom_view(view_func, label, config)
         path_fragment = path_fragment or view_func.__name__.replace("_", "-")
         wrapper._admin_boost_config = {  # type: ignore[attr-defined]
             "label": label,
@@ -221,7 +176,7 @@ class ViewGenerator:
         view_func: Callable,
         label: str,
         *,
-        template_name: str = "admin_boost/change_form.html",
+        template_name: str = "admin_boost/admin_boost_form.html",
         path_fragment: str | None = None,
         permission: str = "view",
     ) -> Callable:
@@ -231,7 +186,7 @@ class ViewGenerator:
             permission=permission,
             requires_object=True,
         )
-        wrapper = self._generate_admin_custom_form_view(view_func, label, config)
+        wrapper = self._generate_admin_custom_view(view_func, label, config)
         path_fragment = path_fragment or view_func.__name__.replace("_", "-")
         wrapper._admin_boost_config = {  # type: ignore[attr-defined]
             "label": label,
@@ -259,7 +214,7 @@ class ViewGenerator:
             requires_object=requires_object,
             permission=permission,
         )
-        wrapper = self._generate_admin_custom_message_view(view_func, label, config)
+        wrapper = self._generate_admin_custom_view(view_func, label, config)
         path_fragment = path_fragment or view_func.__name__.replace("_", "-")
         wrapper._admin_boost_config.update(  # type: ignore[attr-defined]
             {
@@ -317,3 +272,69 @@ class ViewGenerator:
             "show_in_object_tools": True,
         }
         return wrapper
+
+    def generate_admin_custom_adminform_view(  # pylint: disable=too-many-arguments
+        self,
+        view_func: Callable,
+        label: str,
+        *,
+        template_name: str = "admin_boost/admin_boost_form.html",
+        path_fragment: str | None = None,
+        permission: str = "view",
+    ) -> Callable:
+        config = ViewConfig(
+            template_name=template_name,
+            path_fragment=path_fragment,
+            permission=permission,
+            requires_object=True,
+        )
+
+        wrapper = self._generate_admin_custom_view(view_func, label, config)
+        path_fragment = path_fragment or view_func.__name__.replace("_", "-")
+        wrapper._admin_boost_config = {  # type: ignore[attr-defined]
+            "label": label,
+            "path_fragment": path_fragment,
+            "permission": permission,
+            "view_type": "form",
+            "requires_object": True,
+            "show_in_object_tools": True,
+        }
+        return wrapper
+
+        # To implement
+        # from django.contrib.admin.helpers import AdminForm, AdminErrorList
+        #fieldsets = [(None, {'fields': form.fields.keys()})]
+        #adminform = AdminForm(
+        #    form,
+        #    fieldsets,
+        #    {},  # prepopulated_fields
+        #    readonly_fields=(),
+        #    model_admin=self
+        #)
+        #payload = {
+        #    "adminform": adminform,
+        #    "errors": AdminErrorList(form, []),
+        #    "inline_admin_formsets": [],
+        #    "inline_admin_formset": [],
+        #    # 🔥 OBLIGATOIRE DJANGO 4.2+
+        #    "has_editable_inline_admin_formsets": False,
+        #    "media": self.media + form.media,
+        #    "preserved_filters": "",
+        #    "prepopulated_fields": {},
+        #    "prepopulated_fields_json": "[]",
+        #    "has_view_permission": True,
+        #    "has_add_permission": True,
+        #    "has_change_permission": True,
+        #    "has_delete_permission": False,
+        #    "show_save": True,
+        #    "show_save_and_continue": False,
+        #    "show_save_and_add_another": False,
+        #    "show_delete": False,
+        #    "show_close": False,
+        #    "add": False,
+        #    "change": True,
+        #    "is_popup": False,
+        #    "save_as": False,
+        #    "save_on_top": False,
+        #}
+        
