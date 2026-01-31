@@ -278,63 +278,146 @@ class ViewGenerator:
         view_func: Callable,
         label: str,
         *,
-        template_name: str = "admin_boost/admin_boost_form.html",
+        template_name: str = "admin/change_form.html",
         path_fragment: str | None = None,
         permission: str = "view",
     ) -> Callable:
-        config = ViewConfig(
-            template_name=template_name,
-            path_fragment=path_fragment,
-            permission=permission,
-            requires_object=True,
-        )
+        from django.contrib.admin.helpers import AdminForm, AdminErrorList
+        from django.forms import Form
 
-        wrapper = self._generate_admin_custom_view(view_func, label, config)
+        def wrapper(request, object_id=None, *args, **kwargs):
+            obj, redirect = self._check_permissions(request, object_id)
+            if redirect:
+                return redirect
+
+            # Récupérer le formulaire depuis view_func
+            payload = view_func(request, obj, *args, **kwargs)
+            
+            # Si view_func retourne une HttpResponse, la retourner directement
+            if isinstance(payload, (HttpResponse, HttpResponseBase)):
+                return payload
+            
+            # Extraire le formulaire du payload
+            if isinstance(payload, dict):
+                form = payload.get("form")
+            elif isinstance(payload, Form):
+                form = payload
+            else:
+                form = None
+
+            if form is None:
+                raise ValueError(
+                    f"{view_func.__name__} must return a form or a dict with a 'form' key"
+                )
+
+            # Gérer la soumission du formulaire
+            if request.method == "POST":
+                # Lier le formulaire aux données POST
+                form = form.__class__(request.POST, request.FILES, instance=getattr(form, "instance", None))
+                if form.is_valid():
+                    # Si le formulaire est valide, appeler view_func avec le formulaire validé
+                    result = view_func(request, obj, form=form, *args, **kwargs)
+                    if isinstance(result, (HttpResponse, HttpResponseBase)):
+                        return result
+                    # Si view_func retourne une URL de redirection, rediriger
+                    if isinstance(result, dict) and "redirect_url" in result:
+                        from django.shortcuts import redirect as django_redirect
+                        return django_redirect(result["redirect_url"])
+                    # Sinon, continuer avec le formulaire validé
+                    form = result.get("form", form) if isinstance(result, dict) else form
+                    # Mettre à jour le payload avec le result pour permettre la surcharge
+                    if isinstance(result, dict):
+                        payload = result
+                else:
+                    # Si le formulaire n'est pas valide, mettre à jour le payload avec le formulaire lié
+                    if isinstance(payload, dict):
+                        payload["form"] = form
+
+            # Construire le contexte de base
+            context = self._build_base_context(request, obj)
+            context["title"] = label
+
+            # Créer les fieldsets à partir des champs du formulaire
+            fieldsets = [(None, {"fields": list(form.fields.keys())})]
+
+            # Créer AdminForm
+            adminform = AdminForm(
+                form,
+                fieldsets,
+                {},  # prepopulated_fields
+                readonly_fields=(),
+                model_admin=self.model_admin,
+            )
+
+            # Construire le contexte complet pour change_form.html avec valeurs par défaut
+            context.update(
+                {
+                    "adminform": adminform,
+                    "errors": AdminErrorList(form, []),
+                    "inline_admin_formsets": [],
+                    "inline_admin_formset": [],
+                    # 🔥 OBLIGATOIRE DJANGO 4.2+
+                    "has_editable_inline_admin_formsets": False,
+                    "media": self.model_admin.media + form.media,
+                    "preserved_filters": "",
+                    "prepopulated_fields": {},
+                    "prepopulated_fields_json": "[]",
+                    "has_view_permission": self.model_admin.has_view_permission(
+                        request, obj
+                    ),
+                    "has_add_permission": self.model_admin.has_add_permission(request),
+                    "has_change_permission": self.model_admin.has_change_permission(
+                        request, obj
+                    ),
+                    "has_delete_permission": self.model_admin.has_delete_permission(
+                        request, obj
+                    ),
+                    "show_save": True,
+                    "show_save_and_continue": False,
+                    "show_save_and_add_another": False,
+                    "show_delete": False,
+                    "show_close": False,
+                    "add": False,
+                    "change": True,
+                    "is_popup": False,
+                    "save_as": False,
+                    "save_on_top": False,
+                }
+            )
+
+            # Permettre la surcharge de toutes les variables du contexte depuis payload/result
+            if isinstance(payload, dict):
+                # Mettre à jour le formulaire si fourni dans le payload
+                if "form" in payload:
+                    new_form = payload["form"]
+                    # Recréer AdminForm avec le nouveau formulaire si nécessaire
+                    if new_form != form:
+                        form = new_form
+                        fieldsets = [(None, {"fields": list(form.fields.keys())})]
+                        context["adminform"] = AdminForm(
+                            form,
+                            fieldsets,
+                            {},
+                            readonly_fields=(),
+                            model_admin=self.model_admin,
+                        )
+                        context["errors"] = AdminErrorList(form, [])
+                        context["media"] = self.model_admin.media + form.media
+                
+                # Mettre à jour toutes les autres variables du contexte (surcharge possible)
+                context.update({k: v for k, v in payload.items() if k != "form"})
+
+            request.current_app = self.model_admin.admin_site.name
+            return TemplateResponse(request, template_name, context)
+
         path_fragment = path_fragment or view_func.__name__.replace("_", "-")
         wrapper._admin_boost_config = {  # type: ignore[attr-defined]
             "label": label,
             "path_fragment": path_fragment,
             "permission": permission,
-            "view_type": "form",
+            "view_type": "adminform",
             "requires_object": True,
             "show_in_object_tools": True,
         }
         return wrapper
-
-        # To implement
-        # from django.contrib.admin.helpers import AdminForm, AdminErrorList
-        #fieldsets = [(None, {'fields': form.fields.keys()})]
-        #adminform = AdminForm(
-        #    form,
-        #    fieldsets,
-        #    {},  # prepopulated_fields
-        #    readonly_fields=(),
-        #    model_admin=self
-        #)
-        #payload = {
-        #    "adminform": adminform,
-        #    "errors": AdminErrorList(form, []),
-        #    "inline_admin_formsets": [],
-        #    "inline_admin_formset": [],
-        #    # 🔥 OBLIGATOIRE DJANGO 4.2+
-        #    "has_editable_inline_admin_formsets": False,
-        #    "media": self.media + form.media,
-        #    "preserved_filters": "",
-        #    "prepopulated_fields": {},
-        #    "prepopulated_fields_json": "[]",
-        #    "has_view_permission": True,
-        #    "has_add_permission": True,
-        #    "has_change_permission": True,
-        #    "has_delete_permission": False,
-        #    "show_save": True,
-        #    "show_save_and_continue": False,
-        #    "show_save_and_add_another": False,
-        #    "show_delete": False,
-        #    "show_close": False,
-        #    "add": False,
-        #    "change": True,
-        #    "is_popup": False,
-        #    "save_as": False,
-        #    "save_on_top": False,
-        #}
         
