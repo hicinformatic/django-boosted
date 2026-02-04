@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 from typing import Iterable
+import copy
 
 from django.contrib import messages
 from django.contrib.admin import ModelAdmin
+from django.contrib.admin.utils import unquote
 from django.urls import path
 
 from .fieldsets import add_to_fieldset, remove_from_fieldset
@@ -71,6 +73,8 @@ class AdminBoostModel(ModelAdmin):
         return boost_urls + urls
 
     def __init__(self, *args, **kwargs):
+        if hasattr(self, "fieldsets") and self.fieldsets is not None:
+            self.fieldsets = copy.deepcopy(self.fieldsets)
         if hasattr(self, "change_fieldsets"):
             self.change_fieldsets()
         super().__init__(*args, **kwargs)
@@ -95,15 +99,17 @@ class AdminBoostModel(ModelAdmin):
         extra_context["object_tools_items"] = items
         return super().changelist_view(request, extra_context)
 
-
     def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
         extra_context = extra_context or {}
+        obj = None
         if object_id:
+            obj = self.get_object(request, unquote(object_id))
             items = list(extra_context.get("object_tools_items") or [])
             items.extend(self.get_boost_object_tools(request, object_id))
             extra_context["object_tools_items"] = items
+
         if "submit_actions" not in extra_context:
-            extra_context["submit_actions"] = self.get_submit_actions(request, object_id)
+            extra_context["submit_actions"] = self.get_submit_actions(request, obj)
         
         if request.method == "POST":
             submit_actions = extra_context.get("submit_actions", {})
@@ -135,13 +141,22 @@ class AdminBoostModel(ModelAdmin):
         )
         return None
 
-    def get_submit_actions(self, request, object_id=None):
+    def get_action_permission(self, request, action, obj=None):
+        perm = f"has_{action}_permission"
+        if hasattr(self, perm):
+            perm_method = getattr(self, perm)
+            if callable(perm_method):
+                return perm_method(request, obj)
+            return perm_method
+        return True
+
+    def get_submit_actions(self, request, obj=None):
         """Return dict of custom submit actions. Uses changeform_actions if defined."""
-        changeform_actions = getattr(self, "changeform_actions", None)
-        if changeform_actions is None:
-            return {}
-        if isinstance(changeform_actions, dict):
-            return changeform_actions
-        if isinstance(changeform_actions, (list, tuple)):
-            return dict(changeform_actions)
-        return {}
+        changeform_actions = getattr(self, "changeform_actions", {})
+        actions_enable = {}
+        for action_name, action_label in changeform_actions.items():
+            perm = self.get_action_permission(request, action_name, obj)
+            handle = hasattr(self, f"handle_{action_name}")
+            if perm and handle:
+                actions_enable[action_name] = action_label
+        return actions_enable

@@ -22,7 +22,9 @@ def add_to_fieldset(self, name: str, fields: Iterable[str]):
         elif isinstance(fieldset_dict["fields"], tuple):
             fieldset_dict["fields"] = list(fieldset_dict["fields"])
 
-    fieldset_dict["fields"].extend(fields)
+    for field in fields:
+        if field not in fieldset_dict["fields"]:
+            fieldset_dict["fields"].append(field)
 
 
 def remove_from_fieldset(self, name: str, fields: Iterable[str]):
