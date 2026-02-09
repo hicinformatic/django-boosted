@@ -203,11 +203,13 @@ class ViewGenerator:
         view_func: Callable,
         label: str,
         *,
-        template_name: str = "admin_boost/message.html",
+        template_name: str | None = None,
         path_fragment: str | None = None,
         requires_object: bool = False,
         permission: str = "view",
     ) -> Callable:
+        if template_name is None:
+            template_name = "admin_boost/message.html"
         config = ViewConfig(
             template_name=template_name,
             path_fragment=path_fragment,
