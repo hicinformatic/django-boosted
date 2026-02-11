@@ -18,8 +18,7 @@ from .tools import (
     get_boost_view_config,
     get_boost_view_names,
 )
-from .views import ViewGenerator
-from .views_setup import setup_boost_views
+from .views import ViewGenerator, setup_boost_views
 
 
 class AdminBoostModel(ModelAdmin):

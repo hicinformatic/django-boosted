@@ -4,6 +4,7 @@ from django.urls import reverse
 from django_boosted import AdminBoostModel, admin_boost_view
 
 from ..forms import AlphabetForm, CountryForm
+from ..models import Country
 
 
 class CountryAdmin(AdminBoostModel):
@@ -89,12 +90,12 @@ class CountryAdmin(AdminBoostModel):
 
     @admin_boost_view("list", "Custom List View")
     def custom_list_view(self, request):
-        object_list = [
-            {"name": "Custom 1", "id": 1},
-            {"name": "Custom 2", "id": 2},
-            {"name": "Custom 3", "id": 3},
-        ]
-        return {"object_list": object_list}
+        queryset = Country.objects.all()
+        return {
+            "queryset": queryset,
+            "list_display": ["name"],
+            "search_fields": ["name"],
+        }
 
     @admin_boost_view("form", "Custom Form View")
     def custom_form_view(self, request):
@@ -110,12 +111,12 @@ class CountryAdmin(AdminBoostModel):
 
     @admin_boost_view("list", "Custom List Object View")
     def custom_list_object_view(self, request, obj):
-        object_list = [
-            {"name": "Custom 1", "id": 1},
-            {"name": "Custom 2", "id": 2},
-            {"name": "Custom 3", "id": 3},
-        ]
-        return {"object_list": object_list}
+        queryset = Country.objects.filter(name__icontains="a")
+        return {
+            "queryset": queryset,
+            "list_display": ["name"],
+            "search_fields": ["name"],
+        }
 
     @admin_boost_view("form", "Custom Form Object View")
     def custom_form_object_view(self, request, obj):

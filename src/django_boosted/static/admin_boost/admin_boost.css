@@ -102,3 +102,52 @@
     color: #dc3545;
 }
 
+/* Confirm view styles */
+.confirm-container {
+    max-width: 600px;
+    margin: 20px auto;
+}
+
+.confirm-container .messagelist {
+    margin-bottom: 20px;
+}
+
+.confirm-container .warning {
+    padding: 15px;
+    background-color: #ffc;
+    border: 1px solid #ed9;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.confirm-container .submit-row {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    padding: 12px 14px;
+    background: #f8f8f8;
+    border-top: 1px solid #eee;
+}
+
+.confirm-container .submit-row input[name="action"][value="confirm"] {
+    background-color: #ba2121;
+    color: white;
+    font-weight: bold;
+}
+
+.confirm-container .submit-row input[name="action"][value="cancel"] {
+    background-color: #6c757d;
+    color: white;
+}
+
+.confirm-container .submit-row input[type="submit"] {
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.confirm-container .submit-row input[type="submit"]:hover {
+    opacity: 0.9;
+}
