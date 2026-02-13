@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Iterable
 import copy
+from typing import Iterable
 
 from django.contrib import messages
 from django.contrib.admin import ModelAdmin
 from django.contrib.admin.utils import unquote
-from django.urls import path
+from django.urls import path, reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .fieldsets import add_to_fieldset, remove_from_fieldset
 from .format import format_label, format_status, format_with_help_text
@@ -53,12 +54,14 @@ class AdminBoostModel(ModelAdmin):
             path_fragment = config.get("path_fragment") or view_name.replace("_", "-")
             requires_object = config.get("requires_object", False)
 
+            opts = self.model._meta
+            path_name = f"{opts.app_label}_{opts.model_name}_{view_name}"
             if requires_object:
                 boost_urls.append(
                     path(
                         f"<path:object_id>/{path_fragment}/",
                         self.admin_site.admin_view(view),
-                        name=f"{self.model._meta.app_label}_{self.model._meta.model_name}_{view_name}",
+                        name=path_name,
                     )
                 )
             else:
@@ -66,7 +69,7 @@ class AdminBoostModel(ModelAdmin):
                     path(
                         f"{path_fragment}/",
                         self.admin_site.admin_view(view),
-                        name=f"{self.model._meta.app_label}_{self.model._meta.model_name}_{view_name}",
+                        name=path_name,
                     )
                 )
         return boost_urls + urls
@@ -109,18 +112,35 @@ class AdminBoostModel(ModelAdmin):
 
         if "submit_actions" not in extra_context:
             extra_context["submit_actions"] = self.get_submit_actions(request, obj)
-        
+
         if request.method == "POST":
             submit_actions = extra_context.get("submit_actions", {})
-            django_actions = {"_save", "_saveasnew", "_addanother", "_continue", "_saveas", "_save_and_continue"}
+            django_actions = {
+                "_save", "_saveasnew", "_addanother", "_continue",
+                "_saveas", "_save_and_continue",
+            }
             for action_name in submit_actions.keys():
                 if action_name in request.POST and action_name not in django_actions:
-                    custom_response = self.handle_custom_action(action_name, request, object_id)
+                    custom_response = self.handle_custom_action(
+                        action_name, request, object_id
+                    )
                     if custom_response is not None:
                         return custom_response
                     from django.shortcuts import redirect
-                    return redirect(request.path)
-        
+                    url = request.build_absolute_uri(request.path)
+                    if url_has_allowed_host_and_scheme(
+                        url, allowed_hosts=request.get_host()
+                    ):
+                        redirect_url = request.path
+                    else:
+                        opts = self.model._meta
+                        redirect_url = reverse(
+                            f"admin:{opts.app_label}_{opts.model_name}_change",
+                            args=[object_id] if object_id else [],
+                            current_app=self.admin_site.name,
+                        )
+                    return redirect(redirect_url)
+
         return super().changeform_view(
             request,
             object_id=object_id,
@@ -129,14 +149,15 @@ class AdminBoostModel(ModelAdmin):
         )
 
     def handle_custom_action(self, action_name, request, object_id=None):
-        """Handle custom form actions. Override handle_<action_name> for specific actions."""
+        """Handle custom form actions. Override handle_<action_name>."""
         handler_method = getattr(self, f"handle_{action_name}", None)
         if handler_method:
             return handler_method(request, object_id)
-        
+
         messages.warning(
             request,
-            f"Action '{action_name}' is defined but no handler method 'handle_{action_name}' exists."
+            f"Action '{action_name}' is defined but no handler "
+            f"method 'handle_{action_name}' exists.",
         )
         return None
 

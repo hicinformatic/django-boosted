@@ -44,7 +44,7 @@ def setup_boost_views(self, view_generator: ViewGenerator):
 
         method_name = f"generate_admin_custom_{view_type}_view"
         generator_method = getattr(view_generator, method_name, None)
-        
+
         if generator_method is None:
             continue
 

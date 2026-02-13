@@ -121,4 +121,3 @@ class CountryAdmin(AdminBoostModel):
     @admin_boost_view("form", "Custom Form Object View")
     def custom_form_object_view(self, request, obj):
         return {"form": AlphabetForm()}
-

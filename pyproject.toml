@@ -73,6 +73,7 @@ target-version = ["py311"]
 [tool.ruff]
 line-length = 88
 target-version = "py311"
+extend-exclude = ["**/migrations/*"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]

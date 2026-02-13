@@ -7,11 +7,11 @@ from typing import Callable
 from .base import ViewConfig, ViewGenerator
 
 
-class FormViewMixin:
+class FormViewMixin(ViewGenerator):
     """Mixin for form view generation."""
 
     def generate_admin_custom_form_view(
-        self: ViewGenerator,
+        self,
         view_func: Callable,
         label: str,
         *,

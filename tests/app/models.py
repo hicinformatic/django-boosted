@@ -5,7 +5,7 @@ class Country(models.Model):
     name: str = models.CharField(max_length=100)  # type: ignore[assignment]
 
     def __str__(self) -> str:
-        return self.name
+        return str(self.name)
 
     class Meta:
         ordering = ["name"]
@@ -20,7 +20,7 @@ class Alphabet(models.Model):
     )
 
     def __str__(self) -> str:
-        return self.name
+        return str(self.name)
 
     class Meta:
         ordering = ["name"]

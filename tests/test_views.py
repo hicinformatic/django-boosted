@@ -48,4 +48,3 @@ def test_object_tools_button_is_visible(admin_client):
     assert response.status_code == 200
     content = response.content.decode()
     assert "Say hello" in content
-

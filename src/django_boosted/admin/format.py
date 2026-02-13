@@ -40,16 +40,15 @@ def format_label(
             text,
             tag,
         )
-    elif link:
+    if link:
         return format_html(
             '<{} href="{}" class="{}">{}</{}>', tag, link, css_class, text, tag
         )
-    elif style:
+    if style:
         return format_html(
             '<{} class="{}" style="{}">{}</{}>', tag, css_class, style, text, tag
         )
-    else:
-        return format_html('<{} class="{}">{}</{}>', tag, css_class, text, tag)
+    return format_html('<{} class="{}">{}</{}>', tag, css_class, text, tag)
 
 
 def format_status(

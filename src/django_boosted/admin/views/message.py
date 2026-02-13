@@ -7,11 +7,11 @@ from typing import Callable
 from .base import ViewConfig, ViewGenerator
 
 
-class MessageViewMixin:
+class MessageViewMixin(ViewGenerator):
     """Mixin for message view generation."""
 
     def generate_admin_custom_message_view(
-        self: ViewGenerator,
+        self,
         view_func: Callable,
         label: str,
         *,

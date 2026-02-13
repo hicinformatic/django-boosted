@@ -19,4 +19,3 @@ class ViewGenerator(
     BaseViewGenerator,
 ):
     """Complete view generator with all view types."""
-    pass

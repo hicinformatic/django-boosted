@@ -9,11 +9,11 @@ from django.http import HttpResponse, HttpResponseBase, JsonResponse
 from .base import ViewGenerator
 
 
-class JsonViewMixin:
+class JsonViewMixin(ViewGenerator):
     """Mixin for JSON view generation."""
 
     def generate_admin_custom_json_view(
-        self: ViewGenerator,
+        self,
         view_func: Callable,
         label: str,
         *,

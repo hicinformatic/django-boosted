@@ -28,8 +28,8 @@ class UrlModel(models.Model):
 
     objects = UrlManager()
 
-    def __str__(self):
-        return self.name
+    def __str__(self) -> str:
+        return str(self.name)
 
     class Meta:
         verbose_name = _("URL")

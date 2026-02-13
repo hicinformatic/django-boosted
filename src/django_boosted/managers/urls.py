@@ -46,8 +46,8 @@ class UrlManager(VirtualManager):
     ) -> None:
         if config is None:
             config = UrlCollectionConfig()
-        namespaces = config.namespaces
-        app_labels = config.app_labels
+        namespaces = config.namespaces or []
+        app_labels = config.app_labels or []
 
         for pattern in resolver.url_patterns:
             # URLResolver (include)

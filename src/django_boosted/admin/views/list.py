@@ -64,11 +64,11 @@ def build_changelist(
     return cl
 
 
-class ListViewMixin:
+class ListViewMixin(ViewGenerator):
     """Mixin for list view generation."""
 
     def generate_admin_custom_list_view(
-        self: ViewGenerator,
+        self,
         view_func: Callable,
         label: str,
         *,
@@ -80,10 +80,10 @@ class ListViewMixin:
 
         def render_list_view(request, obj, payload):
             queryset = payload.get("queryset")
-            
+
             if queryset is None:
                 queryset = self.model_admin.model.objects.none()
-            
+
             list_display = payload.get("list_display", self.model_admin.list_display)
             list_filter = payload.get("list_filter", ())
             search_fields = payload.get("search_fields", ())

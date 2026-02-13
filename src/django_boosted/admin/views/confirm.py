@@ -7,15 +7,17 @@ from typing import Callable
 from django.http import HttpResponse, HttpResponseBase
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .base import ViewGenerator
 
 
-class ConfirmViewMixin:
+class ConfirmViewMixin(ViewGenerator):
     """Mixin for confirm view generation."""
 
     def generate_admin_custom_confirm_view(
-        self: ViewGenerator,
+        self,
         view_func: Callable,
         label: str,
         *,
@@ -24,6 +26,16 @@ class ConfirmViewMixin:
         requires_object: bool = False,
         permission: str = "view",
     ) -> Callable:
+
+        def _safe_redirect_url(request, fallback: str) -> str:
+            referer = request.META.get("HTTP_REFERER")
+            if referer:
+                url = request.build_absolute_uri(referer)
+                if url_has_allowed_host_and_scheme(
+                    url, allowed_hosts=request.get_host()
+                ):
+                    return referer
+            return fallback
 
         def wrapper(request, object_id=None, *args, **kwargs):
             obj, redirect_response = self._check_permissions(
@@ -34,6 +46,11 @@ class ConfirmViewMixin:
 
             if request.method == "POST":
                 action = request.POST.get("action")
+                opts = self.model_admin.model._meta
+                fallback = reverse(
+                    f"admin:{opts.app_label}_{opts.model_name}_changelist",
+                    current_app=self.model_admin.admin_site.name,
+                )
                 if action == "confirm":
                     result = (
                         view_func(request, obj, confirmed=True, *args, **kwargs)
@@ -42,9 +59,7 @@ class ConfirmViewMixin:
                     )
                     if isinstance(result, (HttpResponse, HttpResponseBase)):
                         return result
-                    return redirect(request.META.get("HTTP_REFERER", ".."))
-                else:
-                    return redirect(request.META.get("HTTP_REFERER", ".."))
+                return redirect(_safe_redirect_url(request, fallback))
 
             payload = (
                 view_func(request, obj, *args, **kwargs)
@@ -67,7 +82,8 @@ class ConfirmViewMixin:
             })
 
             if payload:
-                context.update({k: v for k, v in payload.items() if k not in ["confirm", "choices"]})
+                excluded = ["confirm", "choices"]
+                context.update({k: v for k, v in payload.items() if k not in excluded})
 
             request.current_app = self.model_admin.admin_site.name
             return TemplateResponse(request, template_name, context)

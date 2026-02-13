@@ -36,10 +36,9 @@ class ViewGenerator:
             if not self.model_admin.has_view_permission(request, obj):
                 raise PermissionDenied
             return obj, None
-        else:
-            if not self.model_admin.has_view_permission(request):
-                raise PermissionDenied
-            return None, None
+        if not self.model_admin.has_view_permission(request):
+            raise PermissionDenied
+        return None, None
 
     def _build_base_context(self, request, obj=None):
         opts = self.model_admin.model._meta

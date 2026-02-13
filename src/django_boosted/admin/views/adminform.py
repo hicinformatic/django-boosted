@@ -10,11 +10,11 @@ from django.template.response import TemplateResponse
 from .base import ViewGenerator
 
 
-class AdminFormViewMixin:
+class AdminFormViewMixin(ViewGenerator):
     """Mixin for admin form view generation."""
 
     def generate_admin_custom_adminform_view(
-        self: ViewGenerator,
+        self,
         view_func: Callable,
         label: str,
         *,
@@ -23,7 +23,7 @@ class AdminFormViewMixin:
         requires_object: bool = True,
         permission: str = "view",
     ) -> Callable:
-        from django.contrib.admin.helpers import AdminForm, AdminErrorList
+        from django.contrib.admin.helpers import AdminErrorList, AdminForm
         from django.forms import Form
 
         def wrapper(request, object_id=None, *args, **kwargs):
@@ -38,10 +38,10 @@ class AdminFormViewMixin:
                 if requires_object
                 else view_func(request, *args, **kwargs)
             )
-            
+
             if isinstance(payload, (HttpResponse, HttpResponseBase)):
                 return payload
-            
+
             if isinstance(payload, dict):
                 form = payload.get("form")
             elif isinstance(payload, Form):
@@ -51,14 +51,18 @@ class AdminFormViewMixin:
 
             if form is None:
                 raise ValueError(
-                    f"{view_func.__name__} must return a form or a dict with a 'form' key"
+                    f"{view_func.__name__} must return a form or a dict with a "
+                    "'form' key"
                 )
 
             if request.method == "POST":
                 from django.forms import ModelForm
                 # Only pass instance for ModelForm, not regular Form
                 if isinstance(form, ModelForm):
-                    form = form.__class__(request.POST, request.FILES, instance=getattr(form, "instance", None))
+                    instance = getattr(form, "instance", None)
+                    form = form.__class__(
+                        request.POST, request.FILES, instance=instance
+                    )
                 else:
                     form = form.__class__(request.POST, request.FILES)
                 if form.is_valid():
@@ -72,7 +76,9 @@ class AdminFormViewMixin:
                     if isinstance(result, dict) and "redirect_url" in result:
                         from django.shortcuts import redirect as django_redirect
                         return django_redirect(result["redirect_url"])
-                    form = result.get("form", form) if isinstance(result, dict) else form
+                    form = (
+                        result.get("form", form) if isinstance(result, dict) else form
+                    )
                     if isinstance(result, dict):
                         payload = result
                 else:
@@ -92,7 +98,7 @@ class AdminFormViewMixin:
                 model_admin=self.model_admin,
             )
 
-            # Get permission values from payload if provided, otherwise use model_admin defaults
+            # Get permission values from payload or model_admin defaults
             has_add_perm = (
                 payload.get("has_add_permission")
                 if isinstance(payload, dict) and "has_add_permission" in payload
@@ -155,9 +161,14 @@ class AdminFormViewMixin:
                         )
                         context["errors"] = AdminErrorList(form, [])
                         context["media"] = self.model_admin.media + form.media
-                
-                excluded_keys = {"form", "has_add_permission", "has_change_permission", "has_delete_permission"}
-                context.update({k: v for k, v in payload.items() if k not in excluded_keys})
+
+                excluded_keys = {
+                    "form", "has_add_permission", "has_change_permission",
+                    "has_delete_permission",
+                }
+                context.update(
+                    {k: v for k, v in payload.items() if k not in excluded_keys}
+                )
 
             request.current_app = self.model_admin.admin_site.name
             return TemplateResponse(request, template_name, context)
