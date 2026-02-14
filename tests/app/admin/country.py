@@ -121,3 +121,8 @@ class CountryAdmin(AdminBoostModel):
     @admin_boost_view("form", "Custom Form Object View")
     def custom_form_object_view(self, request, obj):
         return {"form": AlphabetForm()}
+
+    @admin_boost_view("redirect", "Redirect to changelist")
+    def custom_redirect_object_view(self, request, obj):
+        """Return URL string; redirect view handles the redirect."""
+        return reverse("admin:tests_app_country_changelist")

@@ -28,14 +28,30 @@ def admin_client(superuser):
 @pytest.mark.django_db()
 def test_boost_view_renders_context(admin_client):
     country_obj = Country.objects.create(name="Alice")
-    url = reverse("admin:tests_app_country_hello_view", args=[country_obj.pk])
+    url = reverse(
+        "admin:tests_app_country_custom_message_object_view", args=[country_obj.pk]
+    )
 
     response = admin_client.get(url)
 
     assert response.status_code == 200
     content = response.content.decode()
-    assert "Hello Alice" in content
-    assert "Back to change form" in content
+    assert f"This is a custom message object view for {country_obj}" in content
+
+
+@pytest.mark.django_db()
+def test_redirect_view(admin_client):
+    """Redirect view returns 302 and redirects to the expected URL."""
+    country_obj = Country.objects.create(name="Bob")
+    url = reverse(
+        "admin:tests_app_country_custom_redirect_object_view", args=[country_obj.pk]
+    )
+
+    response = admin_client.get(url)
+
+    assert response.status_code == 302
+    changelist_url = reverse("admin:tests_app_country_changelist")
+    assert response.url == changelist_url
 
 
 @pytest.mark.django_db()
@@ -47,4 +63,4 @@ def test_object_tools_button_is_visible(admin_client):
 
     assert response.status_code == 200
     content = response.content.decode()
-    assert "Say hello" in content
+    assert "Redirect to changelist" in content

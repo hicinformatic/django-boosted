@@ -7,12 +7,14 @@ from .form import FormViewMixin
 from .json import JsonViewMixin
 from .list import ListViewMixin
 from .message import MessageViewMixin
+from .redirect import RedirectViewMixin
 
 
 class ViewGenerator(
     ListViewMixin,
     FormViewMixin,
     MessageViewMixin,
+    RedirectViewMixin,
     ConfirmViewMixin,
     JsonViewMixin,
     AdminFormViewMixin,
