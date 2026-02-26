@@ -2,7 +2,7 @@
 {% load i18n admin_urls %}
 
 {% block breadcrumbs %}
-{% if object %}
+{% if object or title %}
 <div class="breadcrumbs">
   <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
   &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
@@ -11,7 +11,7 @@
   &rsaquo; <a href="{% url opts|admin_urlname:'change' original.pk|admin_urlquote %}">{{ original|truncatewords:"18" }}</a>
   {% endif %}
   &rsaquo; {{ title }}
-  </div>
+</div>
 {% else %}
 {{ block.super }}
 {% endif %}

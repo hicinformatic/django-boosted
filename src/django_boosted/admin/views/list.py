@@ -37,8 +37,8 @@ def build_changelist(
     if list_display_links is None and list_display:
         list_display_links = (list_display[0],)
 
-    # Use queryset's model if available, otherwise use model_admin's model
-    model = getattr(queryset, 'model', None) or model_admin.model
+    # Use model_admin's model for breadcrumbs/URLs; queryset may have a different model
+    model = model_admin.model
 
     cl = CustomChangeList(
         request,
