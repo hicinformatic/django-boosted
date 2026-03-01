@@ -39,14 +39,6 @@
 - **URLs**: Register URLs through Django admin's URL system
 - **Models**: Use Django models appropriately, including virtual models when needed
 
-### Qualitybase Integration
-
-- **qualitybase is an installed package**: Always use standard Python imports from `qualitybase.services`
-- **No path manipulation**: Never manipulate `sys.path` or use file paths to import qualitybase modules
-- **Direct imports only**: Use `from qualitybase.services import ...` or `import qualitybase.services ...`
-- **Standard library imports**: Use `importlib.import_module()` from the standard library if needed for dynamic imports
-- **Works everywhere**: Since qualitybase is installed in the virtual environment, imports work consistently across all projects
-
 ### Configuration and Secrets
 
 - Never hardcode API keys, credentials, or sensitive information

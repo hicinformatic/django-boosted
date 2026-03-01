@@ -28,7 +28,7 @@ These rules must always be followed.
 - Do not invent new services, commands, abstractions, patterns, or architectures
 - Do not refactor, redesign, or optimize unless explicitly requested
 - Do not manipulate `sys.path`
-- Do not use filesystem-based imports to access `qualitybase` or `django_boosted`
+- Do not use filesystem-based imports to access `django_boosted`
 - Do not hardcode secrets, credentials, tokens, or API keys
 - Do not execute tooling commands outside the approved entry points
 - **Comments**: Only add comments to resolve ambiguity or uncertainty. Do not comment obvious code.
@@ -202,17 +202,6 @@ django-boosted/
 - Never use file-based or relative imports to access `django_boosted`
 - For dynamic imports, use:
   - `importlib.import_module()` from the standard library
-
----
-
-## Qualitybase Integration (ABSOLUTE)
-
-- `qualitybase` is an installed package (dependency)
-- Always use standard Python imports from `qualitybase.services`
-- No path manipulation: Never manipulate `sys.path` or use file paths to import qualitybase modules
-- Direct imports only: Use `from qualitybase.services import ...` or `import qualitybase.services ...`
-- Standard library imports: Use `importlib.import_module()` from the standard library if needed for dynamic imports
-- Works everywhere: Since qualitybase is installed in the virtual environment, imports work consistently across all projects
 
 ---
 
