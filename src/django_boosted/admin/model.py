@@ -12,7 +12,7 @@ from django.urls import path, reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 
 from .fieldsets import add_to_fieldset, remove_from_fieldset
-from .format import format_label, format_status, format_with_help_text
+from .format import format_label, format_status, format_with_help_text, boolean_icon_html
 from .tools import (
     get_boost_list_tools,
     get_boost_object_tools,
@@ -22,7 +22,15 @@ from .tools import (
 from .views import ViewGenerator, setup_boost_views
 
 
-class AdminBoostModel(ModelAdmin):
+class AdminBoostFormat:
+    """Admin format mixin."""
+    format_label = staticmethod(format_label)
+    format_status = staticmethod(format_status)
+    format_with_help_text = staticmethod(format_with_help_text)
+    boolean_icon_html = staticmethod(boolean_icon_html)
+
+
+class AdminBoostModel(ModelAdmin, AdminBoostFormat):
     change_form_template = "admin_boost/change_form.html"
     change_list_template = "admin_boost/change_list.html"
     boost_views: Iterable[str] = ()
@@ -32,9 +40,6 @@ class AdminBoostModel(ModelAdmin):
             "all": ("admin_boost/admin_boost.css",),
         }
 
-    format_label = staticmethod(format_label)
-    format_status = staticmethod(format_status)
-    format_with_help_text = staticmethod(format_with_help_text)
     add_to_fieldset = add_to_fieldset
     remove_from_fieldset = remove_from_fieldset
     get_boost_view_names = get_boost_view_names

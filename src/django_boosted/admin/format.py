@@ -1,6 +1,18 @@
 """Formatting utilities for django-boosted."""
 
 from django.utils.html import format_html
+from django.templatetags.static import static
+from django.utils.translation import gettext_lazy as _
+
+def boolean_icon_html(value):
+    """Return the HTML image (admin icon) for a boolean value."""
+    is_ok = value == "✓" if isinstance(value, str) else bool(value)
+    icon = "icon-yes.svg" if is_ok else "icon-no.svg"
+    return format_html(
+        '<img src="{}" alt="{}">',
+        static(f"admin/img/{icon}"),
+        _("Yes") if is_ok else _("No"),
+    )
 
 
 def format_label(
