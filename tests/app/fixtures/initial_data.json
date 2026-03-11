@@ -1,0 +1,86 @@
+[
+  {
+    "model": "tests_app.country",
+    "pk": 1,
+    "fields": {
+      "name": "France"
+    }
+  },
+  {
+    "model": "tests_app.country",
+    "pk": 2,
+    "fields": {
+      "name": "Germany"
+    }
+  },
+  {
+    "model": "tests_app.country",
+    "pk": 3,
+    "fields": {
+      "name": "Spain"
+    }
+  },
+  {
+    "model": "tests_app.country",
+    "pk": 4,
+    "fields": {
+      "name": "Italy"
+    }
+  },
+  {
+    "model": "tests_app.country",
+    "pk": 5,
+    "fields": {
+      "name": "United Kingdom"
+    }
+  },
+  {
+    "model": "tests_app.alphabet",
+    "pk": 1,
+    "fields": {
+      "name": "Latin",
+      "country": 1
+    }
+  },
+  {
+    "model": "tests_app.alphabet",
+    "pk": 2,
+    "fields": {
+      "name": "Latin",
+      "country": 2
+    }
+  },
+  {
+    "model": "tests_app.alphabet",
+    "pk": 3,
+    "fields": {
+      "name": "Latin",
+      "country": 3
+    }
+  },
+  {
+    "model": "tests_app.alphabet",
+    "pk": 4,
+    "fields": {
+      "name": "Latin",
+      "country": 4
+    }
+  },
+  {
+    "model": "tests_app.alphabet",
+    "pk": 5,
+    "fields": {
+      "name": "Latin",
+      "country": 5
+    }
+  },
+  {
+    "model": "tests_app.alphabet",
+    "pk": 6,
+    "fields": {
+      "name": "Cyrillic",
+      "country": 1
+    }
+  }
+]
+

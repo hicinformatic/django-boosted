@@ -1,0 +1,10 @@
+{% extends "admin/submit_line.html" %}
+
+{% block submit-row %}
+{% if submit_actions %}
+{% for val, name in submit_actions.items %}
+<input type="submit" value="{{ name }}" class="default" name="{{ val }}">
+{% endfor %}
+{% endif %}
+{{ block.super }}
+{% endblock %}
