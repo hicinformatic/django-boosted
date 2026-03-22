@@ -3,12 +3,27 @@ default_app_config = "django_boosted.apps.DjangoBoostedConfig"  # noqa: E402
 
 from .admin import AdminBoostModel, AdminBoostFormat  # noqa: E402
 from .decorators import admin_boost_action, admin_boost_view  # noqa: E402
+from .middleware import CurrentUserMiddleware, get_current_user  # noqa: E402
+
+# Lazy import for model exports to avoid AppRegistryNotReady when package loads during Django app init
+def __getattr__(name):
+    if name in ("AuditMixin", "AuditUserField", "AuditUserValue", "format_audit_user"):
+        from .models import AuditMixin, AuditUserField, AuditUserValue, format_audit_user
+        return locals()[name]
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 __all__ = [
     "AdminBoostModel",
     "AdminBoostFormat",
     "admin_boost_action",
     "admin_boost_view",
+    "AuditMixin",
+    "AuditUserField",
+    "AuditUserValue",
+    "format_audit_user",
+    "CurrentUserMiddleware",
+    "get_current_user",
 ]
 
 try:
@@ -17,4 +32,4 @@ try:
 except ImportError:
     pass  # rest_framework not installed
 
-__version__ = "0.1.0"
+__version__ = "0.1.2"

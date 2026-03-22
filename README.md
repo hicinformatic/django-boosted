@@ -6,6 +6,7 @@ Lightweight helpers to extend Django’s admin with extra views, custom forms, a
 
 - **`@admin_boost_object_view` decorator** – fetches the target object, checks permissions, and builds the default context before rendering your template.
 - **`AdminBoostMixin`** – registers the custom URLs, protects them with `admin_site.admin_view`, and injects extra object-tool buttons into the change form.
+- **`AuditMixin`** – adds `created_by`, `updated_by`, `created_at`, `updated_at` with automatic user tracking via middleware.
 - **Additional templates** – a change form template that renders the injected buttons plus a simple “Hello” view as a teaching aid.
 
 ## Installation
@@ -84,6 +85,58 @@ The decorator handles:
 - Form validation on POST
 - Adding the form to the template context
 - Backward compatibility (if your view doesn't accept a `form` parameter, it won't be passed)
+
+## Audit (created_by / updated_by)
+
+1. Add `CurrentUserMiddleware` to `MIDDLEWARE` (after `AuthenticationMiddleware`):
+
+```python
+MIDDLEWARE = [
+    ...
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    ...
+    "django_boosted.middleware.CurrentUserMiddleware",
+]
+```
+
+2. Use `AuditMixin` on your models:
+
+```python
+from django.db import models
+from django_boosted import AuditMixin
+
+class Article(AuditMixin, models.Model):
+    title = models.CharField(max_length=200)
+```
+
+The mixin automatically sets `created_by` on first save and `updated_by` on each save when a user is authenticated.
+
+`created_by` and `updated_by` use `AuditUserField`: auto-filled with configurable concatenation. Default: `('pk', 'username')` joined with `_`. Override `audit_user_format` and `audit_user_separator` on the model, or use the field directly:
+
+```python
+# Via mixin
+class Article(AuditMixin, models.Model):
+    audit_user_format = ("pk", "email")
+    audit_user_separator = "-"
+
+# Or use AuditUserField standalone
+from django_boosted import AuditUserField
+
+class Log(models.Model):
+    editor = AuditUserField(format_fields=("pk", "username"), mode="updated")
+```
+
+**Settings**:
+- `DJANGO_BOOSTED_AUDIT_USER_FALLBACK` — default value when no request user (migrations, commands, scripts). Example: `"robot_octolo"`. If not set, default is `None`.
+- `DJANGO_BOOSTED_AUDIT_USER_FORMAT_FIELDS` — tuple of user attributes for the stored value. Default: `("pk", "username")`.
+- `DJANGO_BOOSTED_AUDIT_USER_SEPARATOR` — separator between format fields. Default: `"_"`.
+
+In templates or Python, `created_by` and `updated_by` return `AuditUserValue` (str subclass) with `admin_url`:
+
+```python
+obj.created_by  # "42-johndoe"
+obj.created_by.admin_url  # "/admin/auth/user/42/change/"
+```
 
 ## Development commands
 
