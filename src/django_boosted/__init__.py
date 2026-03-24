@@ -32,4 +32,5 @@ try:
 except ImportError:
     pass  # rest_framework not installed
 
-__version__ = "0.1.2"
+from importlib.metadata import version
+__version__ = version("django-boosted")
